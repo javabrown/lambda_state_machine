@@ -9,6 +9,8 @@ AWS State Machine to execute Lambda Steps Function
 * Deploy Stack:
 > aws cloudformation deploy --capabilities CAPABILITY_IAM --template-file ./output.yaml --stack-name state-machine-sam
 
+* Describe Stack (Incase of Error):
+> aws cloudformation describe-stack-events --stack-name state-machine-sam
 
 * Delete Stack:
 > aws cloudformation delete-stack --stack-name state-machine-sam
