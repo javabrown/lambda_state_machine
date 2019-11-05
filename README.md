@@ -1,4 +1,4 @@
-# lambda_state_machine
+# AWS State Machine - Lambda Steps Function
 AWS State Machine to execute Lambda Steps Function
 
 
