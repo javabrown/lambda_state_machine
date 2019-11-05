@@ -1,9 +1,19 @@
 # lambda_state_machine
-AWS State Machine to execute Lambda step functions
+AWS State Machine to execute Lambda Steps Function
 
 
-* Create Stack:
-> `aws cloudformation create-stack --stack-name statemachine --template-body file://state_machine.json --capabilities CAPABILITY_IAM`
+* Package Stack:
+> aws cloudformation package --template-file ./state_machine.yaml --output-template-file output.yaml --s3-bucket state-machine --s3-prefix state-machine-sam
 
-* Destroy Stack:
-> `aws cloudformation delete-stack --stack-name statemachine`
+
+* Deploy Stack:
+> aws cloudformation deploy --capabilities CAPABILITY_IAM --template-file ./output.yaml --stack-name state-machine-sam
+
+
+* Delete Stack:
+> aws cloudformation delete-stack --stack-name state-machine-sam
+
+
+* Lambda Steps Executed:
+
+![alt text](https://raw.githubusercontent.com/javabrown/lambda_state_machine/master/img.JPG)
