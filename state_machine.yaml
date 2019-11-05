@@ -1,0 +1,97 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: 'AWS::Serverless-2016-10-31'
+Description: IAM role & functions defination for AWS Lambda state machine.
+
+Resources:
+
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service: lambda.amazonaws.com
+          Action: sts:AssumeRole
+
+  TaskOneLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda_function.lambda_handler
+      CodeUri: ./src
+      Role:
+        Fn::GetAtt:
+        - LambdaExecutionRole
+        - Arn
+      Runtime: python3.7
+      MemorySize: 128
+      Timeout: 3
+
+  TaskTwoLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      Handler: lambda_function1.lambda_handler
+      CodeUri: ./src
+      Role:
+        Fn::GetAtt:
+        - LambdaExecutionRole
+        - Arn
+      Runtime: python3.7
+      MemorySize: 128
+      Timeout: 3
+
+  StatesExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: '2012-10-17'
+        Statement:
+        - Effect: Allow
+          Principal:
+            Service:
+            - Fn::Sub: states.${AWS::Region}.amazonaws.com
+          Action: sts:AssumeRole
+      Path: "/"
+      Policies:
+      - PolicyName: StatesExecutionPolicy
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+          - Effect: Allow
+            Action:
+            - lambda:InvokeFunction
+            Resource: "*"
+            
+  MyStateMachine:
+    Type: AWS::StepFunctions::StateMachine
+    Properties:
+      StateMachineName: LexStateMachine
+      DefinitionString:
+        Fn::Sub:
+        - |-
+          {
+            "Comment": "A Lambda StepFunctions - TASK-1",
+            "StartAt": "TaskOneExecutor",
+            "States": {
+              "TaskOneExecutor": {
+                "Type": "Task",
+                "Resource": "${lambdaTaskOneArn}",
+                "Next": "TaskTwoExecutor"
+              },
+              "TaskTwoExecutor": {
+                "Type": "Task",
+                "Resource": "${lambdaTaskOneArn}",
+                "End": true
+              }              
+            }
+          }
+        - lambdaTaskOneArn:
+            Fn::GetAtt:
+            - TaskOneLambdaFunction
+            - Arn         
+      RoleArn:
+        Fn::GetAtt:
+        - StatesExecutionRole
+        - Arn
